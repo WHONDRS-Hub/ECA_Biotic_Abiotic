@@ -1,5 +1,3 @@
-#james edit
-
 # use transformation database with each transformation assigned to be biotic or abiotic or unknown
 # transformations will be parsed into biotic and abiotic groups
 # then the relative contributions of those two groups will be calculated for each sample and ratio will, in turn, be calculated
@@ -71,8 +69,15 @@ write.csv(x = trans.comp,file = "trans_variables.csv", quote = F, row.names = F)
 
 #analysis
 pdf("abiotic_to_biotic_hist.pdf")
-hist(trans.comp$Abiotic.to.Biotic, breaks = 50)
+  hist(trans.comp$Abiotic.to.Biotic, breaks = 50)
 dev.off()
 #hist(log10(trans.comp$Abiotic.to.Biotic))
 #hist(trans.comp$Abiotic.to.Both, breaks = 50)
 #hist(trans.comp$Biotic.to.Both, breaks = 50)
+
+### look at correlations with Latitude and Longitude
+
+meta.data = fac.to.char.fun(read.csv("//PNL/Projects/ECA_Project/Biotic_Abiotic/17Nov2020 files from VGC/WHONDRS_S19S_SW_FTICR_Isotopes_Metadata.csv"))
+str(meta.data)
+
+
