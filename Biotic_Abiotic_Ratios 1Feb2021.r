@@ -1,3 +1,5 @@
+#james edit
+
 # use transformation database with each transformation assigned to be biotic or abiotic or unknown
 # transformations will be parsed into biotic and abiotic groups
 # then the relative contributions of those two groups will be calculated for each sample and ratio will, in turn, be calculated
