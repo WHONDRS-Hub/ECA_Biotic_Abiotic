@@ -77,7 +77,29 @@ dev.off()
 
 ### look at correlations with Latitude and Longitude
 
-meta.data = fac.to.char.fun(read.csv("//PNL/Projects/ECA_Project/Biotic_Abiotic/17Nov2020 files from VGC/WHONDRS_S19S_SW_FTICR_Isotopes_Metadata.csv"))
+meta.data = fac.to.char.fun(read.csv("//PNL/Projects/ECA_Project/Biotic_Abiotic/metadata/WHONDRS_S19S_Metadata_v2.csv", header=F))
+meta.data = meta.data[-1,]
+colnames(meta.data) = meta.data[1,]
+meta.data = meta.data[-1,]
+colnames(meta.data) = gsub (" ", "_", colnames(meta.data))
 str(meta.data)
 
+#colnames(meta.data) = gsub (" ", "_", colnames(meta.data))
 
+climate.all = read.csv("//PNL/Projects/ECA_Project/Biotic_Abiotic/metadata/WHONDRS_ClimVariables.csv")
+metadata.all = merge(meta.data, climate.all, by = "Sample_ID")
+
+relevant.columns = c("Sample_ID","Stream_Name","City","State_or_Province", "Country","US_Longitude_dec.deg","US_Latitude_dec.deg" ,"PET_mm_per_yr","AET_mm_per_yr","MAT_degrees_C", "MAP_mm_per_yr", "TAR_degrees_C","Distance_m")
+
+trans.comp$Lat_dec.deg=-999
+trans.comp$Long_dec.deg=-999
+
+
+for (i in 1:nrow(metadata.all)) {
+  trans.comp$Lat_dec.deg[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]=  as.numeric(metadata.all$`Latitude_of_upstream_site_(decimal_degrees)`[i])
+  trans.comp$Long_dec.deg[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$`Longitude_of_upstream_site_(decimal_degrees)`[i])
+  
+}
+
+
+#check why there are 3 samples per site ID
