@@ -93,13 +93,56 @@ relevant.columns = c("Sample_ID","Stream_Name","City","State_or_Province", "Coun
 
 trans.comp$Lat_dec.deg=-999
 trans.comp$Long_dec.deg=-999
+trans.comp$Sample.Set = -999
+trans.comp$Sample.State = -999
 
 
 for (i in 1:nrow(metadata.all)) {
   trans.comp$Lat_dec.deg[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]=  as.numeric(metadata.all$`Latitude_of_upstream_site_(decimal_degrees)`[i])
   trans.comp$Long_dec.deg[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$`Longitude_of_upstream_site_(decimal_degrees)`[i])
-  
+   if (metadata.all$`Sampling_location:_Country`[i] == 'USA' & metadata.all$`Sampling_location:_State/Province`[i] != 'Alaska' & metadata.all$`Sampling_location:_State/Province`[i] != 'Puerto Rico') {
+    
+    trans.comp$Sample.Set[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)] = "CONUS"
+    trans.comp$Sample.State[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)] = metadata.all$`Sampling_location:_State/Province`[i]  
+  } 
 }
 
+unique(trans.comp$Sample.State)
+trans.comp[grep(pattern = "Florida", x = trans.comp$Sample.State),]
 
-#check why there are 3 samples per site ID
+trans.comp.sed=trans.comp[grep(pattern = "Sed" , x= trans.comp$Sample_ID),]
+
+trans.comp.sw=trans.comp[-grep(pattern = "Sed" , x= trans.comp$Sample_ID),]
+
+
+plot(trans.comp.sed$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
+plot(trans.comp.sed$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
+plot(trans.comp.sw$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+plot(trans.comp.sw$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+
+plot(trans.comp.sed$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
+plot(trans.comp.sed$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
+plot(trans.comp.sw$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+plot(trans.comp.sw$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+
+plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
+plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
+plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+
+
+plot(trans.comp$Biotic.abund ~ trans.comp$Abiotic.abund)
+
+
+plot(trans.comp$Abiotic.abund ~ trans.comp$Lat_dec.deg)
+plot(trans.comp$Abiotic.abund ~ trans.comp$Long_dec.deg)
+plot(trans.comp$Biotic.abund ~ trans.comp$Lat_dec.deg)
+plot(trans.comp$Biotic.abund ~ trans.comp$Long_dec.deg)
+plot(trans.comp$Both.abund ~ trans.comp$Lat_dec.deg)
+plot(trans.comp$Both.abund ~ trans.comp$Long_dec.deg)
+plot(trans.comp$Abiotic.to.Biotic ~ trans.comp$Lat_dec.deg)
+plot(trans.comp$Abiotic.to.Biotic ~ trans.comp$Long_dec.deg)
+plot(trans.comp$Abiotic.to.Both ~ trans.comp$Lat_dec.deg)
+plot(trans.comp$Abiotic.to.Both ~ trans.comp$Long_dec.deg)
+plot(trans.comp$Biotic.to.Both ~ trans.comp$Lat_dec.deg)
+plot(trans.comp$Biotic.to.Both ~ trans.comp$Long_dec.deg)
