@@ -95,11 +95,22 @@ trans.comp$Lat_dec.deg=-999
 trans.comp$Long_dec.deg=-999
 trans.comp$Sample.Set = -999
 trans.comp$Sample.State = -999
+
 #could create more for data we want to pull into the data frame
+trans.comp$PET_mm_per_yr = -999
+trans.comp$AET_mm_per_yr = -999
+trans.comp$MAT_degrees_C = -999
+trans.comp$MAP_mm_per_y = -999
+trans.comp$TAR_degrees_C = -999
 
 for (i in 1:nrow(metadata.all)) {
   trans.comp$Lat_dec.deg[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]=  as.numeric(metadata.all$`Latitude_of_upstream_site_(decimal_degrees)`[i])
   trans.comp$Long_dec.deg[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$`Longitude_of_upstream_site_(decimal_degrees)`[i])
+  trans.comp$PET_mm_per_yr[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$PET_mm_per_year[i])
+  trans.comp$AET_mm_per_yr[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$AET_mm_per_year[i])
+  trans.comp$MAT_degrees_C[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$MAT_degrees_C[i])
+  trans.comp$TAR_degrees_C[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$TAR_degree_C[i])
+  
    if (metadata.all$`Sampling_location:_Country`[i] == 'USA' & metadata.all$`Sampling_location:_State/Province`[i] != 'Alaska' & metadata.all$`Sampling_location:_State/Province`[i] != 'Puerto Rico') {
     
     trans.comp$Sample.Set[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)] = "CONUS"
@@ -113,6 +124,26 @@ trans.comp[grep(pattern = "Florida", x = trans.comp$Sample.State),]
 trans.comp.sed=trans.comp[grep(pattern = "Sed" , x= trans.comp$Sample_ID),]
 
 trans.comp.sw=trans.comp[-grep(pattern = "Sed" , x= trans.comp$Sample_ID),]
+sarah.plot.fun = function(data.in = trans.comp.sed,grep.pattern = "CONUS",y.var = "Abiotic.abund",x.var = "Long_dec.deg") {
+  data.temp = data.in[grep(pattern = grep.pattern,x = data.in[,'Sample.Set']),]
+  if (length(grep(pattern = 'Sed',x = data.temp$Sample_ID)) > 0) {
+    main.temp = paste(grep.pattern,"Sediment",sep=" ")
+    
+  } else {
+    
+    main.temp = paste(grep.pattern,"Surface Water",sep=" ")
+    
+  }
+  
+  mod.to.plot = data.temp[,y.var] ~ data.temp[,x.var]
+  plot(mod.to.plot,xlab=x.var,ylab=y.var,main = main.temp)
+  print(summary(lm(mod.to.plot)))
+  
+}
+
+sarah.plot.fun(data.in = trans.comp.sed,grep.pattern = "CONUS", y.var = "Abiotic.abund",x.var = "Lat_dec.deg")
+sarah.plot.fun(data.in = trans.comp.sed,grep.pattern = "CONUS", y.var = "Abiotic.abund",x.var = "Lat_dec.deg")
+###nested for loops for plotting and placing stats on figs
 
 
 plot(trans.comp.sed$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
@@ -129,6 +160,10 @@ plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sampl
 plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
 plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
 plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+
+plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$PET_mm_per_yr[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
+plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$PET_mm_per_yr[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
+
 
 
 plot(trans.comp$Biotic.abund ~ trans.comp$Abiotic.abund)
