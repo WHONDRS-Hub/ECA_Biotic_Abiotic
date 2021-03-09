@@ -95,7 +95,7 @@ trans.comp$Lat_dec.deg=-999
 trans.comp$Long_dec.deg=-999
 trans.comp$Sample.Set = -999
 trans.comp$Sample.State = -999
-
+#could create more for data we want to pull into the data frame
 
 for (i in 1:nrow(metadata.all)) {
   trans.comp$Lat_dec.deg[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]=  as.numeric(metadata.all$`Latitude_of_upstream_site_(decimal_degrees)`[i])
@@ -106,7 +106,7 @@ for (i in 1:nrow(metadata.all)) {
     trans.comp$Sample.State[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)] = metadata.all$`Sampling_location:_State/Province`[i]  
   } 
 }
-
+#filling columns in above for loop #leave grep as is
 unique(trans.comp$Sample.State)
 trans.comp[grep(pattern = "Florida", x = trans.comp$Sample.State),]
 
@@ -146,3 +146,13 @@ plot(trans.comp$Abiotic.to.Both ~ trans.comp$Lat_dec.deg)
 plot(trans.comp$Abiotic.to.Both ~ trans.comp$Long_dec.deg)
 plot(trans.comp$Biotic.to.Both ~ trans.comp$Lat_dec.deg)
 plot(trans.comp$Biotic.to.Both ~ trans.comp$Long_dec.deg)
+##look at number of peaks
+
+
+
+mod = var1 ~ var2
+plot(mod)
+summary(lm(mod))
+mod = var1 ~ var2 + var3
+
+
