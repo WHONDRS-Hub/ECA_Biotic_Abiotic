@@ -53,6 +53,7 @@ trans.comp = fac.to.char.fun(as.data.frame(trans.comp));
 trans.comp$Abiotic.abund = as.numeric(trans.comp$Abiotic.abund)
 trans.comp$Biotic.abund = as.numeric(trans.comp$Biotic.abund)
 trans.comp$Both.abund = as.numeric(trans.comp$Both.abund)
+trans.comp$Total.trans = trans.comp$Abiotic.abund + trans.comp$Biotic.abund + trans.comp$Both.abund
 str(trans.comp)
 
 #cal ratios
@@ -110,6 +111,7 @@ for (i in 1:nrow(metadata.all)) {
   trans.comp$AET_mm_per_yr[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$AET_mm_per_year[i])
   trans.comp$MAT_degrees_C[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$MAT_degrees_C[i])
   trans.comp$TAR_degrees_C[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$TAR_degree_C[i])
+  trans.comp$MAP_mm_per_y[grep(pattern = metadata.all$Sample_ID[i],x = trans.comp$Sample_ID)]= as.numeric(metadata.all$MAP_mm_per_year[i])
   
    if (metadata.all$`Sampling_location:_Country`[i] == 'USA' & metadata.all$`Sampling_location:_State/Province`[i] != 'Alaska' & metadata.all$`Sampling_location:_State/Province`[i] != 'Puerto Rico') {
     
@@ -122,8 +124,8 @@ unique(trans.comp$Sample.State)
 trans.comp[grep(pattern = "Florida", x = trans.comp$Sample.State),]
 
 trans.comp.sed=trans.comp[grep(pattern = "Sed" , x= trans.comp$Sample_ID),]
-
 trans.comp.sw=trans.comp[-grep(pattern = "Sed" , x= trans.comp$Sample_ID),]
+
 sarah.plot.fun = function(data.in = trans.comp.sed,grep.pattern = "CONUS",y.var = "Abiotic.abund",x.var = "Long_dec.deg") {
   data.temp = data.in[grep(pattern = grep.pattern,x = data.in[,'Sample.Set']),]
   if (length(grep(pattern = 'Sed',x = data.temp$Sample_ID)) > 0) {
@@ -136,17 +138,22 @@ sarah.plot.fun = function(data.in = trans.comp.sed,grep.pattern = "CONUS",y.var 
   }
   
   mod.to.plot = data.temp[,y.var] ~ data.temp[,x.var]
+  mod.lm = summary(lm(mod.to.plot))
   plot(mod.to.plot,xlab=x.var,ylab=y.var,main = main.temp)
+  p.val = round(mod.lm$coefficients[2,4],digits = 4)
+  r.sq = round(mod.lm$r.squared,digits = 3)
+  mtext(text = paste("p = ",p.val," ",sep=""),line = -2,adj = 1,side = 3)
+  mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -3,adj = 1,side = 3)
+  abline(mod.lm)
   
- mod.lm = summary(lm(mod.to.plot))
- abline(mod.lm)
+  return(mod.lm)
   
 }
 
 
-for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic")) {
+for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic","Total.trans")) {
 
-  for (x.var.use in c("Lat_dec.deg", "Long_dec.deg")) {
+  for (x.var.use in c("Lat_dec.deg", "Long_dec.deg","PET_mm_per_yr","AET_mm_per_yr","MAT_degrees_C","TAR_degrees_C","MAP_mm_per_y")) {
 
     pdf(paste(y.var.use,"_vs_",x.var.use,".pdf",sep=""))
     
@@ -158,53 +165,6 @@ for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic")) {
 }
 
 
-
-
-###nested for loops for plotting and placing stats on figs
-
-
-plot(trans.comp.sed$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
-plot(trans.comp.sed$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
-plot(trans.comp.sw$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
-plot(trans.comp.sw$Abiotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
-
-plot(trans.comp.sed$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
-plot(trans.comp.sed$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
-plot(trans.comp.sw$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
-plot(trans.comp.sw$Abiotic.to.Biotic[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
-
-plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
-plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
-plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Long_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
-plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$Lat_dec.deg[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
-
-plot(trans.comp.sw$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)] ~ trans.comp.sw$PET_mm_per_yr[grep(pattern = "CONUS",x = trans.comp.sw$Sample.Set)])
-plot(trans.comp.sed$Biotic.abund[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)] ~ trans.comp.sed$PET_mm_per_yr[grep(pattern = "CONUS",x = trans.comp.sed$Sample.Set)])
-
-
-
-plot(trans.comp$Biotic.abund ~ trans.comp$Abiotic.abund)
-
-
-plot(trans.comp$Abiotic.abund ~ trans.comp$Lat_dec.deg)
-plot(trans.comp$Abiotic.abund ~ trans.comp$Long_dec.deg)
-plot(trans.comp$Biotic.abund ~ trans.comp$Lat_dec.deg)
-plot(trans.comp$Biotic.abund ~ trans.comp$Long_dec.deg)
-plot(trans.comp$Both.abund ~ trans.comp$Lat_dec.deg)
-plot(trans.comp$Both.abund ~ trans.comp$Long_dec.deg)
-plot(trans.comp$Abiotic.to.Biotic ~ trans.comp$Lat_dec.deg)
-plot(trans.comp$Abiotic.to.Biotic ~ trans.comp$Long_dec.deg)
-plot(trans.comp$Abiotic.to.Both ~ trans.comp$Lat_dec.deg)
-plot(trans.comp$Abiotic.to.Both ~ trans.comp$Long_dec.deg)
-plot(trans.comp$Biotic.to.Both ~ trans.comp$Lat_dec.deg)
-plot(trans.comp$Biotic.to.Both ~ trans.comp$Long_dec.deg)
 ##look at number of peaks
-
-
-
-mod = var1 ~ var2
-plot(mod)
-summary(lm(mod))
-mod = var1 ~ var2 + var3
 
 
