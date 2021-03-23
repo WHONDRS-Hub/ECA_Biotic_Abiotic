@@ -132,17 +132,34 @@ sarah.plot.fun = function(data.in = trans.comp.sed,grep.pattern = "CONUS",y.var 
   } else {
     
     main.temp = paste(grep.pattern,"Surface Water",sep=" ")
-    
+  
   }
   
   mod.to.plot = data.temp[,y.var] ~ data.temp[,x.var]
   plot(mod.to.plot,xlab=x.var,ylab=y.var,main = main.temp)
-  print(summary(lm(mod.to.plot)))
+  
+ mod.lm = summary(lm(mod.to.plot))
+ abline(mod.lm)
   
 }
 
-sarah.plot.fun(data.in = trans.comp.sed,grep.pattern = "CONUS", y.var = "Abiotic.abund",x.var = "Lat_dec.deg")
-sarah.plot.fun(data.in = trans.comp.sed,grep.pattern = "CONUS", y.var = "Abiotic.abund",x.var = "Lat_dec.deg")
+
+for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic")) {
+
+  for (x.var.use in c("Lat_dec.deg", "Long_dec.deg")) {
+
+    pdf(paste(y.var.use,"_vs_",x.var.use,".pdf",sep=""))
+    
+    sarah.plot.fun(data.in = trans.comp.sed,grep.pattern = "CONUS", y.var = y.var.use, x.var = x.var.use )
+    sarah.plot.fun(data.in = trans.comp.sw,grep.pattern = "CONUS", y.var = y.var.use, x.var = x.var.use )
+    dev.off()##closes graphic device in R and saves files in directory
+  }
+  
+}
+
+
+
+
 ###nested for loops for plotting and placing stats on figs
 
 
