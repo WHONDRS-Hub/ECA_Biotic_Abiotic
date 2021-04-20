@@ -169,8 +169,44 @@ for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic","Total.
 ##manuscript figures
 
 #Figure 1
-biotic.sed.den = density(trans.comp.sed$Biotic.abund)
-biotic.sw.den = density(trans.comp.sw$Biotic.abund)
-plot(biotic.sed.den)
-plot(biotic.sw.den)
 
+# define density objects
+biotic.sed.den = density(trans.comp.sed$Biotic.abund,from = 0)
+biotic.sw.den = density(trans.comp.sw$Biotic.abund,from = 0)
+
+abiotic.sed.den = density(trans.comp.sed$Abiotic.abund,from = 0)
+abiotic.sw.den = density(trans.comp.sw$Abiotic.abund,from = 0)
+
+abio.to.bio.sed.den = density(trans.comp.sed$Abiotic.to.Biotic,from = 0)
+abio.to.bio.sw.den = density(trans.comp.sw$Abiotic.to.Biotic,from = 0)
+
+
+# define functions
+x.range.fun = function(sed.den,sw.den) {
+  
+  x.min = min(c(sed.den$x,sw.den$x))
+  x.max = max(c(sed.den$x,sw.den$x))
+  return(c(x.min,x.max))
+  
+}
+
+y.range.fun = function(sed.den,sw.den) {
+  
+  y.min = 0
+  y.max = max(c(sed.den$y,sw.den$y))
+  return(c(y.min,y.max))
+  
+}
+
+# do the plotting
+
+## keep going here, need to save and fix axes, and add legend and letter designations in the panels
+par(mfrow = c(3,1))
+plot(biotic.sed.den,xlim = x.range.fun(biotic.sed.den,biotic.sw.den),ylim=y.range.fun(biotic.sed.den,biotic.sw.den),main="",xlab="Number of Biotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
+points(biotic.sw.den,typ="l",lwd=2,col="blue")
+
+plot(abiotic.sed.den,xlim = x.range.fun(abiotic.sed.den,abiotic.sw.den),ylim=y.range.fun(abiotic.sed.den,abiotic.sw.den),main="",xlab="Number of Abiotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
+points(abiotic.sw.den,typ="l",lwd=2,col="blue")
+
+plot(abio.to.bio.sed.den,xlim = x.range.fun(abio.to.bio.sed.den,abio.to.bio.sw.den),ylim=y.range.fun(abio.to.bio.sed.den,abio.to.bio.sw.den),main="",xlab="Ratio of Abiotic to Biotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
+points(abio.to.bio.sw.den,typ="l",lwd=2,col="blue")
