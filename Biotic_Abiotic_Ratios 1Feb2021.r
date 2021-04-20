@@ -166,5 +166,11 @@ for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic","Total.
 
 
 ##look at number of peaks
+##manuscript figures
 
+#Figure 1
+biotic.sed.den = density(trans.comp.sed$Biotic.abund)
+biotic.sw.den = density(trans.comp.sw$Biotic.abund)
+plot(biotic.sed.den)
+plot(biotic.sw.den)
 
