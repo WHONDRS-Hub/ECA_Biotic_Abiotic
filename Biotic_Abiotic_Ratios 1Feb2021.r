@@ -168,7 +168,9 @@ for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic","Total.
 ##look at number of peaks
 ##manuscript figures
 
-#Figure 1
+######
+### Figure 1
+######
 
 # define density objects
 biotic.sed.den = density(trans.comp.sed$Biotic.abund,from = 0)
@@ -177,8 +179,8 @@ biotic.sw.den = density(trans.comp.sw$Biotic.abund,from = 0)
 abiotic.sed.den = density(trans.comp.sed$Abiotic.abund,from = 0)
 abiotic.sw.den = density(trans.comp.sw$Abiotic.abund,from = 0)
 
-abio.to.bio.sed.den = density(trans.comp.sed$Abiotic.to.Biotic,from = 0)
-abio.to.bio.sw.den = density(trans.comp.sw$Abiotic.to.Biotic,from = 0)
+abio.to.bio.sed.den = density(trans.comp.sed$Abiotic.to.Biotic)
+abio.to.bio.sw.den = density(trans.comp.sw$Abiotic.to.Biotic)
 
 
 # define functions
@@ -200,13 +202,83 @@ y.range.fun = function(sed.den,sw.den) {
 
 # do the plotting
 
-## keep going here, need to save and fix axes, and add legend and letter designations in the panels
-par(mfrow = c(3,1))
-plot(biotic.sed.den,xlim = x.range.fun(biotic.sed.den,biotic.sw.den),ylim=y.range.fun(biotic.sed.den,biotic.sw.den),main="",xlab="Number of Biotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
-points(biotic.sw.den,typ="l",lwd=2,col="blue")
+pdf("Fig1_Density_Plots.pdf",height = 15)
 
-plot(abiotic.sed.den,xlim = x.range.fun(abiotic.sed.den,abiotic.sw.den),ylim=y.range.fun(abiotic.sed.den,abiotic.sw.den),main="",xlab="Number of Abiotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
-points(abiotic.sw.den,typ="l",lwd=2,col="blue")
+  par(mfrow = c(3,1),pty="s") # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
+ 
+  plot(biotic.sed.den,xlim = x.range.fun(biotic.sed.den,biotic.sw.den),ylim=y.range.fun(biotic.sed.den,biotic.sw.den),main="",xlab="Number of Biotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
+  points(biotic.sw.den,typ="l",lwd=2,col="blue")
+  mtext(text = " A",line = -2,adj = 0,side = 3,cex = 1.5)
+  legend(x = 42000,y = 6.5e-05,legend = c("Surface Water","Sediments"),col = c("blue","orange"),lty = 1,lwd = 2,bty = "n",cex=1.5)
+  
+  plot(abiotic.sed.den,xlim = x.range.fun(abiotic.sed.den,abiotic.sw.den),ylim=y.range.fun(abiotic.sed.den,abiotic.sw.den),main="",xlab="Number of Abiotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
+  points(abiotic.sw.den,typ="l",lwd=2,col="blue")
+  mtext(text = " B",line = -2,adj = 0,side = 3,cex = 1.5)
 
-plot(abio.to.bio.sed.den,xlim = x.range.fun(abio.to.bio.sed.den,abio.to.bio.sw.den),ylim=y.range.fun(abio.to.bio.sed.den,abio.to.bio.sw.den),main="",xlab="Ratio of Abiotic to Biotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
-points(abio.to.bio.sw.den,typ="l",lwd=2,col="blue")
+  plot(abio.to.bio.sed.den,xlim = x.range.fun(abio.to.bio.sed.den,abio.to.bio.sw.den),ylim=y.range.fun(abio.to.bio.sed.den,abio.to.bio.sw.den),main="",xlab="Ratio of Abiotic to Biotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
+  points(abio.to.bio.sw.den,typ="l",lwd=2,col="blue")
+  mtext(text = " C",line = -2,adj = 0,side = 3,cex = 1.5)
+
+dev.off()
+
+######
+### Figure 2
+######
+
+# abiotic from water vs abiotic from sediment (each field site has one value for abiotic water and one value for abiotic sediment)
+# repeat for biotic and the ratio. So 3 panels total.
+# add regression lines and 1 to 1 lines
+# add letters to panels
+# if we have 1 to 1 and regression on each panel, then add legend differentiating those two
+
+# step 1, collapse data into site level mean values for sw and sed, for each variable
+
+trans.site = numeric()
+
+head(trans.comp.sed)
+unique.site = unique(sub(pattern = "_Sed.*",replacement = "" ,x=trans.comp.sed$Sample_ID ))
+
+for (i in unique.site) {
+  
+  temp.sed.abiotic = mean(trans.comp.sed$Abiotic.abund[grep(pattern = i,x = trans.comp.sed$Sample_ID)])
+  temp.sed.biotic = mean(trans.comp.sed$Biotic.abund[grep(pattern = i,x = trans.comp.sed$Sample_ID)])
+  temp.sed.ratio = mean(trans.comp.sed$Abiotic.to.Biotic[grep(pattern = i,x = trans.comp.sed$Sample_ID)])
+  
+  temp.sw.abiotic = mean(trans.comp.sw$Abiotic.abund[grep(pattern = i,x = trans.comp.sw$Sample_ID)])
+  temp.sw.biotic = mean(trans.comp.sw$Biotic.abund[grep(pattern = i,x = trans.comp.sw$Sample_ID)])
+  temp.sw.ratio = mean(trans.comp.sw$Abiotic.to.Biotic[grep(pattern = i,x = trans.comp.sw$Sample_ID)])
+
+  trans.site = rbind(trans.site,c(i,temp.sed.abiotic,temp.sed.biotic,temp.sed.ratio,temp.sw.abiotic,temp.sw.biotic,temp.sw.ratio))
+  
+}
+
+colnames(trans.site) = c("Site_ID","sed.abiotic","sed.biotic","sed.ratio","sw.abiotic","sw.biotic","sw.ratio") 
+trans.site = fac.to.char.fun(as.data.frame(trans.site))
+
+for (i in 2:ncol(trans.site)) {
+  
+  trans.site[,i] = as.numeric(trans.site[,i])
+  
+}
+
+head(trans.site)
+str(trans.site)
+
+# do plotting
+
+## next thing is to use the function from above to do the plotting
+## expand to biotic and the ratio for all 3 panels
+
+mod.to.plot = trans.site$sw.abiotic ~ trans.site$sed.abiotic
+mod.lm = summary(lm(mod.to.plot))
+plot(mod.to.plot,xlab="",ylab="",main = "")
+p.val = round(mod.lm$coefficients[2,4],digits = 4)
+r.sq = round(mod.lm$r.squared,digits = 3)
+mtext(text = paste("p = ",p.val," ",sep=""),line = -2,adj = 1,side = 3)
+mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -3,adj = 1,side = 3)
+abline(mod.lm,lwd=2)
+abline(0,1,lty=2,lwd=2)
+
+
+
+
