@@ -276,8 +276,8 @@ bivariate.plot.fun = function(data.in = trans.site,y.var = "Sed. Abiotic Transfo
   plot(mod.to.plot,xlab=x.var,ylab=y.var,cex.lab=2,cex.axis=1.5)
   p.val = round(mod.lm$coefficients[2,4],digits = 2)
   r.sq = round(mod.lm$r.squared,digits = 2)
-  mtext(text = paste("p = ",p.val," ",sep=""),line = -26,adj = 1,side = 3)
-  mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -27,adj = 1,side = 3)
+  mtext(text = paste("p = ",p.val," ",sep=""),line = -4,adj = 1,side = 1)
+  mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -2,adj = 1,side = 1)
   #abline(mod.lm,lwd=2)
   abline(0,1,lty=2,lwd=2,col=8)
   
@@ -305,8 +305,41 @@ dev.off()
 # regression of biotic vs. abiotic in SW and repeat for sediment, for 2 panels
 # use trans.site
 
-plot()
+regression.plot.fun = function(data.in = trans.site,y.var = "SW Biotic Transformations",x.var = "SW Abiotic Transformations") {
+  
+  data.temp = data.in
+  
+  mod.to.plot = data.temp[,y.var] ~ data.temp[,x.var]
+  mod.lm = summary(lm(mod.to.plot))
+  plot(mod.to.plot,xlab=x.var,ylab=y.var,cex.lab=2,cex.axis=1.5)
+  p.val = round(mod.lm$coefficients[2,4],digits = 5)
+  r.sq = round(mod.lm$r.squared,digits = 2)
+  #mtext(text = paste("p = ",p.val," ",sep=""),line = -2,adj = 1,side = 1)
+  mtext(text = paste("p << 0.0001 ",sep=""),line = -4,adj = 1,side = 1)# p values were zero so hard coded
+  mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -2,adj = 1,side = 1)
+  abline(mod.lm,lwd=2)
+  #abline(0,1,lty=2,lwd=2,col=8)
+  
+  return(mod.lm)
+  
+}
 
+pdf("Fig3_Bio_v_Abio.pdf",height = 15)
+
+par(mfrow = c(3,1),pty="s") # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
+
+regression.plot.fun(data.in = trans.site,y.var = "SW Biotic Transformations",x.var = "SW Abiotic Transformations")
+mtext(text = " A",line = -2,adj = 0,side = 3,cex = 1.5)
+regression.plot.fun(data.in = trans.site,y.var = "Sed. Biotic Transformations",x.var = "Sed. Abiotic Transformations")
+mtext(text = " B",line = -2,adj = 0,side = 3,cex = 1.5)
+
+
+dev.off()
+
+####Paragraphs 7-8: Fig 4: A couple example regressions of biotic and abiotic vs lat and long. That could be 4 panels at most, maybe just 2. 
+#Supplement Figs 2...: All the regressions vs. lat, long, climate.
+#Paragraphs 9-10: Summary/conclusion paragraphs with conceptual outcomes and future needs
+#start with line 129 , maybe we have 4 panels, abiotic and biotic for sw and sed agaist long, some reg are sig fig but Rsq is really low, talking points in discussion
 
 
 
