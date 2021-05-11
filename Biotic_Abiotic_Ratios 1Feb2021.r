@@ -252,7 +252,7 @@ for (i in unique.site) {
   
 }
 
-colnames(trans.site) = c("Site_ID","sed.abiotic","sed.biotic","sed.ratio","sw.abiotic","sw.biotic","sw.ratio") 
+colnames(trans.site) = c("Site_ID","Sed. Abiotic Transformations","Sed. Biotic Transformations","Sed. Abiotic:Biotic Ratio","SW Abiotic Transformations","SW Biotic Transformations","SW Abiotic:Biotic Ratio") 
 trans.site = fac.to.char.fun(as.data.frame(trans.site))
 
 for (i in 2:ncol(trans.site)) {
@@ -266,18 +266,48 @@ str(trans.site)
 
 # do plotting
 
-## next thing is to use the function from above to do the plotting
-## expand to biotic and the ratio for all 3 panels
+# write function to do the plotting
+bivariate.plot.fun = function(data.in = trans.site,y.var = "Sed. Abiotic Transformations",x.var = "SW Abiotic Transformations") {
+  
+  data.temp = data.in
+  
+  mod.to.plot = data.temp[,y.var] ~ data.temp[,x.var]
+  mod.lm = summary(lm(mod.to.plot))
+  plot(mod.to.plot,xlab=x.var,ylab=y.var,cex.lab=2,cex.axis=1.5)
+  p.val = round(mod.lm$coefficients[2,4],digits = 2)
+  r.sq = round(mod.lm$r.squared,digits = 2)
+  mtext(text = paste("p = ",p.val," ",sep=""),line = -26,adj = 1,side = 3)
+  mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -27,adj = 1,side = 3)
+  #abline(mod.lm,lwd=2)
+  abline(0,1,lty=2,lwd=2,col=8)
+  
+  return(mod.lm)
+  
+}
 
-mod.to.plot = trans.site$sw.abiotic ~ trans.site$sed.abiotic
-mod.lm = summary(lm(mod.to.plot))
-plot(mod.to.plot,xlab="",ylab="",main = "")
-p.val = round(mod.lm$coefficients[2,4],digits = 4)
-r.sq = round(mod.lm$r.squared,digits = 3)
-mtext(text = paste("p = ",p.val," ",sep=""),line = -2,adj = 1,side = 3)
-mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -3,adj = 1,side = 3)
-abline(mod.lm,lwd=2)
-abline(0,1,lty=2,lwd=2)
+pdf("Fig2_Sed_v_SW_Plots.pdf",height = 15)
+
+  par(mfrow = c(3,1),pty="s") # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
+
+  bivariate.plot.fun(data.in = trans.site,y.var = "Sed. Abiotic Transformations",x.var = "SW Abiotic Transformations")
+  mtext(text = " A",line = -2,adj = 0,side = 3,cex = 1.5)
+  bivariate.plot.fun(data.in = trans.site,y.var = "Sed. Biotic Transformations",x.var = "SW Biotic Transformations")
+  mtext(text = " B",line = -2,adj = 0,side = 3,cex = 1.5)
+  bivariate.plot.fun(data.in = trans.site,y.var = "Sed. Abiotic:Biotic Ratio",x.var = "SW Abiotic:Biotic Ratio")
+  mtext(text = " C",line = -2,adj = 0,side = 3,cex = 1.5)
+
+dev.off()
+
+#####
+# Fig. 3
+#####
+
+# regression of biotic vs. abiotic in SW and repeat for sediment, for 2 panels
+# use trans.site
+
+plot()
+
+
 
 
 
