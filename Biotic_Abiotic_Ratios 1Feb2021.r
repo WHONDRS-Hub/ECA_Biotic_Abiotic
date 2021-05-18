@@ -128,18 +128,31 @@ trans.comp.sw=trans.comp[-grep(pattern = "Sed" , x= trans.comp$Sample_ID),]
 
 sarah.plot.fun = function(data.in = trans.comp.sed,grep.pattern = "CONUS",y.var = "Abiotic.abund",x.var = "Long_dec.deg") {
   data.temp = data.in[grep(pattern = grep.pattern,x = data.in[,'Sample.Set']),]
+  
   if (length(grep(pattern = 'Sed',x = data.temp$Sample_ID)) > 0) {
-    main.temp = paste(grep.pattern,"Sediment",sep=" ")
+    main.temp = paste("Sediment",sep=" ")
     
   } else {
     
-    main.temp = paste(grep.pattern,"Surface Water",sep=" ")
+    main.temp = paste("Surface Water",sep=" ")
   
   }
   
+  if (y.var == "Abiotic.abund") { y.var.temp = "Abiotic Transformations" }
+  if (y.var == "Biotic.abund") { y.var.temp = "Biotic Transformations" }
+  if (y.var == "Abiotic.to.Biotic") { y.var.temp = "Abiotic to Biotic Ratio" }
+  if (y.var == "Total.trans") { y.var.temp = "Total Transformations" }
+  
+  if (x.var == "Lat_dec.deg") { x.var.temp = "Latitude (decimal degrees)" }
+  if (x.var == "Long_dec.deg") { x.var.temp = "Longitude (decimal degrees)" }
+  if (x.var == "PET_mm_per_yr") { x.var.temp = expression(paste("Potential Evapotranspiration (mm yr"^"-1",")")) }
+  if (x.var == "AET_mm_per_yr") { x.var.temp = expression(paste("Actual Evapotranspiration (mm yr"^"-1",")")) }
+  if (x.var == "MAT_degrees_C") { x.var.temp = expression(paste("Mean Annual Temperature ("^"o","C)")) }
+  if (x.var == "MAP_mm_per_y") { x.var.temp = expression(paste("Mean Annual Precipitation (mm yr"^"-1",")")) }
+
   mod.to.plot = data.temp[,y.var] ~ data.temp[,x.var]
   mod.lm = summary(lm(mod.to.plot))
-  plot(mod.to.plot,xlab=x.var,ylab=y.var,main = main.temp)
+  plot(mod.to.plot,xlab=x.var.temp,ylab=y.var.temp,main = main.temp,cex.lab=1.75,cex.axis=1.25)
   p.val = round(mod.lm$coefficients[2,4],digits = 4)
   r.sq = round(mod.lm$r.squared,digits = 3)
   mtext(text = paste("p = ",p.val," ",sep=""),line = -2,adj = 1,side = 3)
@@ -153,17 +166,16 @@ sarah.plot.fun = function(data.in = trans.comp.sed,grep.pattern = "CONUS",y.var 
 
 for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic","Total.trans")) {
 
-  for (x.var.use in c("Lat_dec.deg", "Long_dec.deg","PET_mm_per_yr","AET_mm_per_yr","MAT_degrees_C","TAR_degrees_C","MAP_mm_per_y")) {
+  for (x.var.use in c("Lat_dec.deg", "Long_dec.deg","PET_mm_per_yr","AET_mm_per_yr","MAT_degrees_C","MAP_mm_per_y")) {
 
     pdf(paste(y.var.use,"_vs_",x.var.use,".pdf",sep=""))
-    
+    par(pty="s")
     sarah.plot.fun(data.in = trans.comp.sed,grep.pattern = "CONUS", y.var = y.var.use, x.var = x.var.use )
     sarah.plot.fun(data.in = trans.comp.sw,grep.pattern = "CONUS", y.var = y.var.use, x.var = x.var.use )
     dev.off()##closes graphic device in R and saves files in directory
   }
   
 }
-
 
 ##look at number of peaks
 ##manuscript figures
@@ -202,6 +214,8 @@ y.range.fun = function(sed.den,sw.den) {
 
 # do the plotting
 
+!!!! Do Mann-Whitney to test for difference between sed and sw for each panel
+
 pdf("Fig1_Density_Plots.pdf",height = 15)
 
   par(mfrow = c(3,1),pty="s") # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
@@ -226,10 +240,6 @@ dev.off()
 ######
 
 # abiotic from water vs abiotic from sediment (each field site has one value for abiotic water and one value for abiotic sediment)
-# repeat for biotic and the ratio. So 3 panels total.
-# add regression lines and 1 to 1 lines
-# add letters to panels
-# if we have 1 to 1 and regression on each panel, then add legend differentiating those two
 
 # step 1, collapse data into site level mean values for sw and sed, for each variable
 
@@ -336,8 +346,7 @@ mtext(text = " B",line = -2,adj = 0,side = 3,cex = 1.5)
 
 dev.off()
 
-####Paragraphs 7-8: Fig 4: A couple example regressions of biotic and abiotic vs lat and long. That could be 4 panels at most, maybe just 2. 
-#Supplement Figs 2...: All the regressions vs. lat, long, climate.
+####Paragraphs 7-8: Fig 4: Supplement Figs 2...: All the regressions vs. lat, long, climate. All made individually, need to pull into Word doc and write figure captions
 #Paragraphs 9-10: Summary/conclusion paragraphs with conceptual outcomes and future needs
 #start with line 129 , maybe we have 4 panels, abiotic and biotic for sw and sed agaist long, some reg are sig fig but Rsq is really low, talking points in discussion
 
