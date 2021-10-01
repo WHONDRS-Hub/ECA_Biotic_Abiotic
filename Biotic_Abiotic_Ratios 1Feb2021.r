@@ -16,7 +16,7 @@ fac.to.char.fun = function(matrix.in) {
 }
 
 # set the working directory
-setwd("//PNL/Projects/ECA_Project/Biotic_Abiotic")
+setwd("//PNL/Projects/ECA_Project/Biotic_Abiotic/Sarah/")
 
 # read in the transformation database, take a look at the first few rows, and check the variable types
 trans = fac.to.char.fun(read.csv("Biotic-abiotic-transfromation-classification.csv")); head(trans); str(trans)
@@ -31,7 +31,7 @@ trans$Biotic.abiotic = gsub(pattern = "Biotic based on Kegg but we didn't use fo
 unique(trans$Biotic.abiotic)
 
 #read in transformation profiles
-prof.tran = fac.to.char.fun(read.csv("S19S_Sed-Water_08.12_Trans_Profiles.csv")); prof.tran[1:5,1:5]; str(prof.tran)
+prof.tran = fac.to.char.fun(read.csv("S19S_Sed-Water_9.23_Trans_Profiles.csv")); prof.tran[1:5,1:5]; str(prof.tran)
 
 #new matrix, sample name, abundance of transformation type, ratio
 trans.comp = numeric()
@@ -76,7 +76,7 @@ dev.off()
 #hist(trans.comp$Abiotic.to.Both, breaks = 50)
 #hist(trans.comp$Biotic.to.Both, breaks = 50)
 
-### look at correlations with Latitude and Longitude
+### look at correlations with Latitude, Longitude, and env variables
 
 meta.data = fac.to.char.fun(read.csv("//PNL/Projects/ECA_Project/Biotic_Abiotic/metadata/WHONDRS_S19S_Metadata_v2.csv", header=F))
 meta.data = meta.data[-1,]
@@ -177,7 +177,17 @@ for (y.var.use in c("Abiotic.abund", "Biotic.abund", "Abiotic.to.Biotic","Total.
   
 }
 
-##look at number of peaks
+## do multiple regression for some select relationships based on univariate relationships
+library(olsrr)
+
+sed.model <- lm(Total.trans ~ Lat_dec.deg + Long_dec.deg + AET_mm_per_yr + MAT_degrees_C + MAP_mm_per_y, data = trans.comp.sed)
+ols_step_all_possible(sed.model)
+# full model has raw R.sq = 0.07759295 (so the multiple regression shows that there is very little variation explained)
+
+sw.model <- lm(Total.trans ~ Lat_dec.deg + Long_dec.deg + AET_mm_per_yr + MAT_degrees_C + MAP_mm_per_y, data = trans.comp.sw)
+ols_step_all_possible(sw.model)
+# full model has raw R.sq = 7.793908e-02 (so the multiple regression shows that there is very little variation explained)
+
 ##manuscript figures
 
 ######
@@ -214,16 +224,14 @@ y.range.fun = function(sed.den,sw.den) {
 
 # do the plotting
 
-!!!! Do Mann-Whitney to test for difference between sed and sw for each panel
-
 pdf("Fig1_Density_Plots.pdf",height = 15)
 
-  par(mfrow = c(3,1),pty="s") # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
+  par(mfrow = c(3,1),pty="s",mar = c(4.5, 4, 1, 2)) # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
  
   plot(biotic.sed.den,xlim = x.range.fun(biotic.sed.den,biotic.sw.den),ylim=y.range.fun(biotic.sed.den,biotic.sw.den),main="",xlab="Number of Biotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
   points(biotic.sw.den,typ="l",lwd=2,col="blue")
   mtext(text = " A",line = -2,adj = 0,side = 3,cex = 1.5)
-  legend(x = 42000,y = 6.5e-05,legend = c("Surface Water","Sediments"),col = c("blue","orange"),lty = 1,lwd = 2,bty = "n",cex=1.5)
+  legend(x = 32000,y = 6.5e-05,legend = c("Surface Water","Sediments"),col = c("blue","orange"),lty = 1,lwd = 2,bty = "n",cex=2)
   
   plot(abiotic.sed.den,xlim = x.range.fun(abiotic.sed.den,abiotic.sw.den),ylim=y.range.fun(abiotic.sed.den,abiotic.sw.den),main="",xlab="Number of Abiotic Transformations",cex.lab=2,cex.axis=1.5,lwd=2,col="orange")
   points(abiotic.sw.den,typ="l",lwd=2,col="blue")
@@ -234,6 +242,20 @@ pdf("Fig1_Density_Plots.pdf",height = 15)
   mtext(text = " C",line = -2,adj = 0,side = 3,cex = 1.5)
 
 dev.off()
+
+# wilcox tests
+
+wilcox.test(x = trans.comp.sed$Biotic.abund,y = trans.comp.sw$Biotic.abund)
+# data:  trans.comp.sed$Biotic.abund and trans.comp.sw$Biotic.abund
+# W = 5510, p-value < 2.2e-16
+
+wilcox.test(x = trans.comp.sed$Abiotic.abund,y = trans.comp.sw$Abiotic.abund)
+# data:  trans.comp.sed$Abiotic.abund and trans.comp.sw$Abiotic.abund
+# W = 7959, p-value < 2.2e-16
+
+wilcox.test(x = trans.comp.sed$Abiotic.to.Biotic,y = trans.comp.sw$Abiotic.to.Biotic)
+# data:  trans.comp.sed$Abiotic.to.Biotic and trans.comp.sw$Abiotic.to.Biotic
+# W = 58908, p-value < 2.2e-16
 
 ######
 ### Figure 2
@@ -287,7 +309,7 @@ bivariate.plot.fun = function(data.in = trans.site,y.var = "Sed. Abiotic Transfo
   p.val = round(mod.lm$coefficients[2,4],digits = 2)
   r.sq = round(mod.lm$r.squared,digits = 2)
   mtext(text = paste("p = ",p.val," ",sep=""),line = -4,adj = 1,side = 1)
-  mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -2,adj = 1,side = 1)
+  mtext(text = substitute(paste(R^2," = ", r.sq," "), list(r.sq=r.sq)),line = -2,adj = 1,side = 1)
   #abline(mod.lm,lwd=2)
   abline(0,1,lty=2,lwd=2,col=8)
   
@@ -297,7 +319,7 @@ bivariate.plot.fun = function(data.in = trans.site,y.var = "Sed. Abiotic Transfo
 
 pdf("Fig2_Sed_v_SW_Plots.pdf",height = 15)
 
-  par(mfrow = c(3,1),pty="s") # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
+  par(mfrow = c(3,1),pty="s",mar = c(4.5, 4, 1, 2)) # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
 
   bivariate.plot.fun(data.in = trans.site,y.var = "Sed. Abiotic Transformations",x.var = "SW Abiotic Transformations")
   mtext(text = " A",line = -2,adj = 0,side = 3,cex = 1.5)
@@ -326,7 +348,7 @@ regression.plot.fun = function(data.in = trans.site,y.var = "SW Biotic Transform
   r.sq = round(mod.lm$r.squared,digits = 2)
   #mtext(text = paste("p = ",p.val," ",sep=""),line = -2,adj = 1,side = 1)
   mtext(text = paste("p << 0.0001 ",sep=""),line = -4,adj = 1,side = 1)# p values were zero so hard coded
-  mtext(text = paste("R.sq = ",r.sq," ",sep=""),line = -2,adj = 1,side = 1)
+  mtext(text = substitute(paste(R^2," = ", r.sq," "), list(r.sq=r.sq)),line = -2,adj = 1,side = 1)
   abline(mod.lm,lwd=2)
   #abline(0,1,lty=2,lwd=2,col=8)
   
@@ -336,7 +358,7 @@ regression.plot.fun = function(data.in = trans.site,y.var = "SW Biotic Transform
 
 pdf("Fig3_Bio_v_Abio.pdf",height = 15)
 
-par(mfrow = c(3,1),pty="s") # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
+par(mfrow = c(3,1),pty="s",mar = c(4.5, 4, 1, 2)) # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
 
 regression.plot.fun(data.in = trans.site,y.var = "SW Biotic Transformations",x.var = "SW Abiotic Transformations")
 mtext(text = " A",line = -2,adj = 0,side = 3,cex = 1.5)
