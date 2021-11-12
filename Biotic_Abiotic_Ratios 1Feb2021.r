@@ -372,6 +372,85 @@ dev.off()
 #Paragraphs 9-10: Summary/conclusion paragraphs with conceptual outcomes and future needs
 #start with line 129 , maybe we have 4 panels, abiotic and biotic for sw and sed agaist long, some reg are sig fig but Rsq is really low, talking points in discussion
 
+#############
+# distance regression comparing water and sediment
+
+#transformation profiles
+
+unique.site = unique(sub(pattern = "_Sed.*",replacement = "" ,x=trans.comp.sed$Sample_ID ))
+
+rel.abund.comp = numeric()
+
+for (i in unique.site) {
+  
+  temp.prof = prof.tran[,c(which(colnames(prof.tran) == 'Mass'),grep(pattern = i,x=colnames(prof.tran)))]
+  sed.temp.prof = temp.prof[,c(which(colnames(temp.prof) == 'Mass'),grep(pattern = '_Sed_',x=colnames(temp.prof)))]
+  sw.temp.prof = temp.prof[,-grep(pattern = '_Sed_',x=colnames(temp.prof))]
+  
+  if (class(sed.temp.prof) == 'data.frame' & class(sw.temp.prof) == 'data.frame') {
+  
+  if (length(grep(pattern = i,x = colnames(sed.temp.prof))) > 1) {
+    
+    sed.temp.prof$sum.temp = rowSums(x = sed.temp.prof[,grep(pattern = i,x=colnames(sed.temp.prof))],na.rm = T)
+
+    sed.temp.prof = sed.temp.prof[,-grep(pattern = i,x=colnames(sed.temp.prof))]
+
+    sed.temp.prof$sum.temp = sed.temp.prof$sum.temp/sum(sed.temp.prof$sum.temp)
+
+    colnames(sed.temp.prof)[which(colnames(sed.temp.prof) == 'sum.temp')] = paste0(i,"_Sed")
+
+  } else{
+    
+    colnames(sed.temp.prof)[grep(pattern = i,colnames(sed.temp.prof))] = 'sum.temp'
+    
+    sed.temp.prof$sum.temp = sed.temp.prof$sum.temp/sum(sed.temp.prof$sum.temp)
+    
+    colnames(sed.temp.prof)[which(colnames(sed.temp.prof) == 'sum.temp')] = paste0(i,"_Sed")
+    
+  }
+  
+  
+  if (length(grep(pattern = i,x = colnames(sw.temp.prof))) > 1) {
+    
+    sw.temp.prof$sum.temp = rowSums(x = sw.temp.prof[,grep(pattern = i,x=colnames(sw.temp.prof))],na.rm = T)
+    
+    sw.temp.prof = sw.temp.prof[,-grep(pattern = i,x=colnames(sw.temp.prof))]
+    
+    sw.temp.prof$sum.temp = sw.temp.prof$sum.temp/sum(sw.temp.prof$sum.temp)
+    
+    colnames(sw.temp.prof)[which(colnames(sw.temp.prof) == 'sum.temp')] = paste0(i,"_SW")
+    
+  } else {
+    
+    colnames(sw.temp.prof)[grep(pattern = i,colnames(sw.temp.prof))] = 'sum.temp'
+    
+    sw.temp.prof$sum.temp = sw.temp.prof$sum.temp/sum(sw.temp.prof$sum.temp)
+    
+    colnames(sw.temp.prof)[which(colnames(sw.temp.prof) == 'sum.temp')] = paste0(i,"_SW")
+    
+  }
+  
+  temp.prof = merge(sed.temp.prof,sw.temp.prof,by='Mass',sort = F)
+  
+  if (is.null(dim(rel.abund.comp)) == T) {
+    
+    rel.abund.comp = temp.prof
+    
+  } else {
+    
+    rel.abund.comp = merge(rel.abund.comp,temp.prof,by='Mass',sort = F)
+    
+  }
+  
+  rm('temp.prof','sed.temp.prof','sw.temp.prof')
+  
+  }
+  
+}
+
+
+!!!! next step is to split the matrix into SW and Sed (based on column names) and then compute bray curtis and then pair the two matrices and do the regression
+
 
 
 
