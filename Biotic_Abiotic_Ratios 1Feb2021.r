@@ -375,6 +375,8 @@ dev.off()
 #############
 # distance regression comparing water and sediment
 
+library(vegan)
+
 #transformation profiles
 
 unique.site = unique(sub(pattern = "_Sed.*",replacement = "" ,x=trans.comp.sed$Sample_ID ))
@@ -448,10 +450,51 @@ for (i in unique.site) {
   
 }
 
+# split the rel.abund.comp into sw and sed
+rownames(rel.abund.comp) = rel.abund.comp$Mass
 
-!!!! next step is to split the matrix into SW and Sed (based on column names) and then compute bray curtis and then pair the two matrices and do the regression
+sw.for.bray = rel.abund.comp[,grep(pattern = "SW",x = colnames(rel.abund.comp))]; colnames(sw.for.bray) = gsub(pattern = "_SW",replacement = "",x = colnames(sw.for.bray))
+sed.for.bray = rel.abund.comp[,grep(pattern = "Sed",x = colnames(rel.abund.comp))]; colnames(sed.for.bray) = gsub(pattern = "_Sed",replacement = "",x = colnames(sed.for.bray))
 
+# check, this MUST be true
+identical(colnames(sw.for.bray),colnames(sed.for.bray))
 
+# calculate bray-curtis
+sw.bray = vegdist(x = t(sw.for.bray),method = "bray")
+sed.bray = vegdist(x = t(sed.for.bray),method = "bray")
 
+# plot sed.bray against sw.bray
+
+pdf("SI_SW_Sed_Bray.pdf")
+  par(pty="s")
+  mod.to.plot = sw.bray ~ sed.bray
+  plot(mod.to.plot,xlab="Sediment Bray-Curtis",ylab="Surface Water Bray-Curtis",cex.lab=2,cex.axis=1.5,cex=0.4)
+dev.off()
+
+# trim out the outliers and replot and do stats
+sw.bray.matrix = as.matrix(sw.bray)
+sed.bray.matrix = as.matrix(sed.bray)
+hist(sed.bray.matrix[,which(sed.bray.matrix[1,] > 0.2)])
+sample.to.remove = names(which(sed.bray.matrix[1,] > 0.2))
+# "Sample_S19S_0079" will be removed
+
+sed.bray.matrix = sed.bray.matrix[-c(which(rownames(sed.bray.matrix) == sample.to.remove)),-c(which(colnames(sed.bray.matrix) == sample.to.remove))]
+sw.bray.matrix = sw.bray.matrix[-c(which(rownames(sw.bray.matrix) == sample.to.remove)),-c(which(colnames(sw.bray.matrix) == sample.to.remove))]
+
+# check, MUST be TRUE
+identical(colnames(sed.bray.matrix),colnames(sw.bray.matrix))
+identical(rownames(sed.bray.matrix),colnames(sw.bray.matrix))
+
+pdf("Fig4_SW_Sed_Bray_Trim.pdf",height = 15)
+  par(mfrow = c(3,1),pty="s",mar = c(4.5, 4, 1, 2)) # 3 rows, 1 column from mfrow; pty = "s" makes the panels square
+  mod.to.plot = as.dist(sw.bray.matrix) ~ as.dist(sed.bray.matrix)
+  plot(mod.to.plot,xlab="Sediment Bray-Curtis",ylab="Surface Water Bray-Curtis",cex.lab=2,cex.axis=1.5,cex=0.4)
+  abline(lm(mod.to.plot),col=3,lwd=3,lty=1)
+  mantel.out = mantel(xdis = sed.bray.matrix,ydis = sw.bray.matrix,method = "pearson",permutations = 10000)
+  p.val = round(mantel.out$signif,digits = 3)
+  r.val = round(mantel.out$statistic,digits = 2)
+  mtext(text = paste("p = ",p.val," ",sep=""),line = -4,adj = 1,side = 3)
+  mtext(text = paste("r = ",r.val," ",sep=""),line = -2,adj = 1,side = 3)
+dev.off()
 
 
